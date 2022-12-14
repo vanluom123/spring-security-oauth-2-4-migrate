@@ -15,7 +15,6 @@
  */
 package org.springframework.security.oauth.samples.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -36,17 +35,19 @@ public class AuthorizationController {
 	@Value("${messages.base-uri}")
 	private String messagesBaseUri;
 
-	@Autowired
-	@Qualifier("messagingClientAuthCodeRestTemplate")
-	private OAuth2RestTemplate messagingClientAuthCodeRestTemplate;
+	private final OAuth2RestTemplate messagingClientAuthCodeRestTemplate;
 
-	@Autowired
-	@Qualifier("messagingClientClientCredsRestTemplate")
-	private OAuth2RestTemplate messagingClientClientCredsRestTemplate;
+	private final OAuth2RestTemplate messagingClientClientCredsRestTemplate;
 
-	@Autowired
-	@Qualifier("messagingClientPasswordRestTemplate")
-	private OAuth2RestTemplate messagingClientPasswordRestTemplate;
+	private final OAuth2RestTemplate messagingClientPasswordRestTemplate;
+
+	public AuthorizationController(@Qualifier("messagingClientAuthCodeRestTemplate") OAuth2RestTemplate messagingClientAuthCodeRestTemplate,
+								   @Qualifier("messagingClientClientCredsRestTemplate") OAuth2RestTemplate messagingClientClientCredsRestTemplate,
+								   @Qualifier("messagingClientPasswordRestTemplate") OAuth2RestTemplate messagingClientPasswordRestTemplate) {
+		this.messagingClientAuthCodeRestTemplate = messagingClientAuthCodeRestTemplate;
+		this.messagingClientClientCredsRestTemplate = messagingClientClientCredsRestTemplate;
+		this.messagingClientPasswordRestTemplate = messagingClientPasswordRestTemplate;
+	}
 
 
 	@GetMapping(value = "/authorize", params = "grant_type=authorization_code")
