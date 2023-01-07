@@ -27,33 +27,34 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 /**
  * @author Joe Grandja
  */
+@SuppressWarnings("deprecation")
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    // @formatter:off
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .authorizeRequests()
-                .antMatchers("/oauth2/keys").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .formLogin();
-    }
-    // @formatter:on
+  // @formatter:off
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http
+        .authorizeRequests()
+        .antMatchers("/oauth2/keys").permitAll()
+        .anyRequest().authenticated()
+        .and()
+        .formLogin();
+  }
+  // @formatter:on
 
-    @Bean
-    public UserDetailsService users() throws Exception {
-        User.UserBuilder users = User.withDefaultPasswordEncoder();
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(users.username("user1").password("password").roles("USER").build());
-        manager.createUser(users.username("admin").password("password").roles("USER", "ADMIN").build());
-        return manager;
-    }
+  @Bean
+  public UserDetailsService users() {
+    User.UserBuilder users = User.withDefaultPasswordEncoder();
+    InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+    manager.createUser(users.username("user1").password("password").roles("USER").build());
+    manager.createUser(users.username("admin").password("password").roles("USER", "ADMIN").build());
+    return manager;
+  }
 
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
+  @Bean
+  @Override
+  public AuthenticationManager authenticationManagerBean() throws Exception {
+    return super.authenticationManagerBean();
+  }
 }

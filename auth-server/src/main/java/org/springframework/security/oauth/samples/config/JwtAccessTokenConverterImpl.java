@@ -12,28 +12,29 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("deprecation")
 public class JwtAccessTokenConverterImpl extends JwtAccessTokenConverter {
-    private final JsonParser objectMapper;
-    private final Signer signer;
+  private final JsonParser objectMapper;
+  private final Signer signer;
 
-    public JwtAccessTokenConverterImpl(Signer signer, SignatureVerifier verifier) {
-        objectMapper = JsonParserFactory.create();
-        this.signer = signer;
-        this.setSigner(signer);
-        this.setVerifier(verifier);
-    }
+  public JwtAccessTokenConverterImpl(Signer signer, SignatureVerifier verifier) {
+    objectMapper = JsonParserFactory.create();
+    this.signer = signer;
+    this.setSigner(signer);
+    this.setVerifier(verifier);
+  }
 
-    @Override
-    protected String encode(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-        String content;
-        try {
-            content = this.objectMapper.formatMap(getAccessTokenConverter().convertAccessToken(accessToken, authentication));
-        } catch (Exception ex) {
-            throw new IllegalStateException("Cannot convert access token to JSON", ex);
-        }
-        Map<String, String> headers = new HashMap<>();
-        headers.put("kid", KeyConfig.VERIFIER_KEY_ID);
-        String token = JwtHelper.encode(content, signer, headers).getEncoded();
-        return token;
+  @Override
+  protected String encode(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
+    String content;
+    try {
+      content = this.objectMapper.formatMap(getAccessTokenConverter().convertAccessToken(accessToken, authentication));
     }
+    catch (Exception ex) {
+      throw new IllegalStateException("Cannot convert access token to JSON", ex);
+    }
+    Map<String, String> headers = new HashMap<>();
+    headers.put("kid", KeyConfig.VERIFIER_KEY_ID);
+    return JwtHelper.encode(content, signer, headers).getEncoded();
+  }
 }

@@ -32,59 +32,60 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class AuthorizationController {
 
-	@Value("${messages.base-uri}")
-	private String messagesBaseUri;
+  @Value("${messages.base-uri}")
+  private String messagesBaseUri;
 
-	private final OAuth2RestTemplate messagingClientAuthCodeRestTemplate;
+  private final OAuth2RestTemplate messagingClientAuthCodeRestTemplate;
 
-	private final OAuth2RestTemplate messagingClientClientCredsRestTemplate;
+  private final OAuth2RestTemplate messagingClientClientCredsRestTemplate;
 
-	private final OAuth2RestTemplate messagingClientPasswordRestTemplate;
+  private final OAuth2RestTemplate messagingClientPasswordRestTemplate;
 
-	public AuthorizationController(@Qualifier("messagingClientAuthCodeRestTemplate") OAuth2RestTemplate messagingClientAuthCodeRestTemplate,
-								   @Qualifier("messagingClientClientCredsRestTemplate") OAuth2RestTemplate messagingClientClientCredsRestTemplate,
-								   @Qualifier("messagingClientPasswordRestTemplate") OAuth2RestTemplate messagingClientPasswordRestTemplate) {
-		this.messagingClientAuthCodeRestTemplate = messagingClientAuthCodeRestTemplate;
-		this.messagingClientClientCredsRestTemplate = messagingClientClientCredsRestTemplate;
-		this.messagingClientPasswordRestTemplate = messagingClientPasswordRestTemplate;
-	}
+  public AuthorizationController(
+      @Qualifier("messagingClientAuthCodeRestTemplate") OAuth2RestTemplate messagingClientAuthCodeRestTemplate,
+      @Qualifier("messagingClientClientCredsRestTemplate") OAuth2RestTemplate messagingClientClientCredsRestTemplate,
+      @Qualifier("messagingClientPasswordRestTemplate") OAuth2RestTemplate messagingClientPasswordRestTemplate) {
+    this.messagingClientAuthCodeRestTemplate = messagingClientAuthCodeRestTemplate;
+    this.messagingClientClientCredsRestTemplate = messagingClientClientCredsRestTemplate;
+    this.messagingClientPasswordRestTemplate = messagingClientPasswordRestTemplate;
+  }
 
 
-	@GetMapping(value = "/authorize", params = "grant_type=authorization_code")
-	public String authorization_code_grant(Model model) {
-		String[] messages = this.messagingClientAuthCodeRestTemplate.getForObject(this.messagesBaseUri, String[].class);
-		model.addAttribute("messages", messages);
-		return "index";
-	}
+  @GetMapping(value = "/authorize", params = "grant_type=authorization_code")
+  public String authorization_code_grant(Model model) {
+    String[] messages = this.messagingClientAuthCodeRestTemplate.getForObject(this.messagesBaseUri, String[].class);
+    model.addAttribute("messages", messages);
+    return "index";
+  }
 
-	@GetMapping("/authorized")		// registered redirect_uri for authorization_code
-	public String authorized(Model model) {
-		String[] messages = this.messagingClientAuthCodeRestTemplate.getForObject(this.messagesBaseUri, String[].class);
-		model.addAttribute("messages", messages);
-		return "index";
-	}
+  @GetMapping("/authorized")    // registered redirect_uri for authorization_code
+  public String authorized(Model model) {
+    String[] messages = this.messagingClientAuthCodeRestTemplate.getForObject(this.messagesBaseUri, String[].class);
+    model.addAttribute("messages", messages);
+    return "index";
+  }
 
-	@GetMapping(value = "/authorize", params = "grant_type=client_credentials")
-	public String client_credentials_grant(Model model) {
-		String[] messages = this.messagingClientClientCredsRestTemplate.getForObject(this.messagesBaseUri, String[].class);
-		model.addAttribute("messages", messages);
-		return "index";
-	}
+  @GetMapping(value = "/authorize", params = "grant_type=client_credentials")
+  public String client_credentials_grant(Model model) {
+    String[] messages = this.messagingClientClientCredsRestTemplate.getForObject(this.messagesBaseUri, String[].class);
+    model.addAttribute("messages", messages);
+    return "index";
+  }
 
-	@PostMapping(value = "/authorize", params = "grant_type=password")
-	public String password_grant(Model model, HttpServletRequest request) {
-		ResourceOwnerPasswordResourceDetails passwordResourceDetails =
-				(ResourceOwnerPasswordResourceDetails) this.messagingClientPasswordRestTemplate.getResource();
-		passwordResourceDetails.setUsername(request.getParameter("username"));
-		passwordResourceDetails.setPassword(request.getParameter("password"));
+  @PostMapping(value = "/authorize", params = "grant_type=password")
+  public String password_grant(Model model, HttpServletRequest request) {
+    ResourceOwnerPasswordResourceDetails passwordResourceDetails =
+        (ResourceOwnerPasswordResourceDetails) this.messagingClientPasswordRestTemplate.getResource();
+    passwordResourceDetails.setUsername(request.getParameter("username"));
+    passwordResourceDetails.setPassword(request.getParameter("password"));
 
-		String[] messages = this.messagingClientPasswordRestTemplate.getForObject(this.messagesBaseUri, String[].class);
-		model.addAttribute("messages", messages);
+    String[] messages = this.messagingClientPasswordRestTemplate.getForObject(this.messagesBaseUri, String[].class);
+    model.addAttribute("messages", messages);
 
-		// Never store the user's credentials
-		passwordResourceDetails.setUsername(null);
-		passwordResourceDetails.setPassword(null);
+    // Never store the user's credentials
+    passwordResourceDetails.setUsername(null);
+    passwordResourceDetails.setPassword(null);
 
-		return "index";
-	}
+    return "index";
+  }
 }

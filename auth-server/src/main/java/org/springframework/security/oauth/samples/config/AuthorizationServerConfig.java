@@ -46,72 +46,72 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    private final ClientDetailsService clientDetailsService;
+  private final ClientDetailsService clientDetailsService;
 
-    private final AuthenticationManager authenticationManager;
+  private final AuthenticationManager authenticationManager;
 
-    public AuthorizationServerConfig(ClientDetailsService clientDetailsService, AuthenticationManager authenticationManager) {
-        this.clientDetailsService = clientDetailsService;
-        this.authenticationManager = authenticationManager;
-    }
+  public AuthorizationServerConfig(ClientDetailsService clientDetailsService,
+                                   AuthenticationManager authenticationManager) {
+    this.clientDetailsService = clientDetailsService;
+    this.authenticationManager = authenticationManager;
+  }
 
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        // @formatter:off
-        clients.inMemory()
-                .withClient("messaging-client")
-                .authorizedGrantTypes("authorization_code", "refresh_token", "client_credentials", "password")
-                .scopes("message.read", "message.write")
-                .secret("{noop}secret")
-                .redirectUris("http://localhost:8080/authorized");
-        // @formatter:on
-    }
+  @Override
+  public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+    // @formatter:off
+    clients.inMemory()
+           .withClient("messaging-client")
+           .authorizedGrantTypes("authorization_code", "refresh_token", "client_credentials", "password")
+           .scopes("message.read", "message.write")
+           .secret("{noop}secret")
+           .redirectUris("http://localhost:8080/authorized");
+    // @formatter:on
+  }
 
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints
-                .authenticationManager(this.authenticationManager)
-                .tokenStore(tokenStore())
-                .userApprovalHandler(userApprovalHandler())
-                .accessTokenConverter(accessTokenConverter());
-    }
+  @Override
+  public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
+    endpoints.authenticationManager(this.authenticationManager)
+             .tokenStore(tokenStore())
+             .userApprovalHandler(userApprovalHandler())
+             .accessTokenConverter(accessTokenConverter());
+  }
 
-    @Bean
-    public UserApprovalHandler userApprovalHandler() {
-        ApprovalStoreUserApprovalHandler userApprovalHandler = new ApprovalStoreUserApprovalHandler();
-        userApprovalHandler.setApprovalStore(approvalStore());
-        userApprovalHandler.setClientDetailsService(this.clientDetailsService);
-        userApprovalHandler.setRequestFactory(new DefaultOAuth2RequestFactory(this.clientDetailsService));
-        return userApprovalHandler;
-    }
+  @Bean
+  public UserApprovalHandler userApprovalHandler() {
+    ApprovalStoreUserApprovalHandler userApprovalHandler = new ApprovalStoreUserApprovalHandler();
+    userApprovalHandler.setApprovalStore(approvalStore());
+    userApprovalHandler.setClientDetailsService(this.clientDetailsService);
+    userApprovalHandler.setRequestFactory(new DefaultOAuth2RequestFactory(this.clientDetailsService));
+    return userApprovalHandler;
+  }
 
-    @Bean
-    public TokenStore tokenStore() {
-        JwtTokenStore tokenStore = new JwtTokenStore(accessTokenConverter());
-        tokenStore.setApprovalStore(approvalStore());
-        return tokenStore;
-    }
+  @Bean
+  public TokenStore tokenStore() {
+    JwtTokenStore tokenStore = new JwtTokenStore(accessTokenConverter());
+    tokenStore.setApprovalStore(approvalStore());
+    return tokenStore;
+  }
 
-    @Bean
-    public JwtAccessTokenConverter accessTokenConverter() {
-        final RsaSigner signer = new RsaSigner(KeyConfig.getSignerKey());
-        final SignatureVerifier verify = new RsaVerifier(KeyConfig.getVerifierKey());
+  @Bean
+  public JwtAccessTokenConverter accessTokenConverter() {
+    final RsaSigner signer = new RsaSigner(KeyConfig.getSignerKey());
+    final SignatureVerifier verify = new RsaVerifier(KeyConfig.getVerifierKey());
 
-        JwtAccessTokenConverter converter = new JwtAccessTokenConverterImpl(signer, verify);
-        return converter;
-    }
+    JwtAccessTokenConverter converter = new JwtAccessTokenConverterImpl(signer, verify);
+    return converter;
+  }
 
-    @Bean
-    public ApprovalStore approvalStore() {
-        return new InMemoryApprovalStore();
-    }
+  @Bean
+  public ApprovalStore approvalStore() {
+    return new InMemoryApprovalStore();
+  }
 
-    @Bean
-    public JWKSet jwkSet() {
-        RSAKey.Builder builder = new RSAKey.Builder(KeyConfig.getVerifierKey())
-                .keyUse(KeyUse.SIGNATURE)
-                .algorithm(JWSAlgorithm.RS256)
-                .keyID(KeyConfig.VERIFIER_KEY_ID);
-        return new JWKSet(builder.build());
-    }
+  @Bean
+  public JWKSet jwkSet() {
+    RSAKey.Builder builder = new RSAKey.Builder(KeyConfig.getVerifierKey())
+        .keyUse(KeyUse.SIGNATURE)
+        .algorithm(JWSAlgorithm.RS256)
+        .keyID(KeyConfig.VERIFIER_KEY_ID);
+    return new JWKSet(builder.build());
+  }
 }

@@ -25,31 +25,32 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 /**
  * @author Joe Grandja
  */
+@SuppressWarnings("deprecation")
 @Configuration
 @EnableResourceServer
 public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
-	private static final String RESOURCE_ID = "messages-resource";
+  private static final String RESOURCE_ID = "messages-resource";
 
-	private final TokenStore tokenStore;
+  private final TokenStore tokenStore;
 
-	public ResourceServerConfig(TokenStore tokenStore) {
-		this.tokenStore = tokenStore;
-	}
+  public ResourceServerConfig(TokenStore tokenStore) {
+    this.tokenStore = tokenStore;
+  }
 
-	@Override
-	public void configure(ResourceServerSecurityConfigurer security) {
-		security
-			.resourceId(RESOURCE_ID)
-			.tokenStore(this.tokenStore);
-	}
+  @Override
+  public void configure(ResourceServerSecurityConfigurer security) {
+    security
+        .resourceId(RESOURCE_ID)
+        .tokenStore(this.tokenStore);
+  }
 
-	@Override
-	public void configure(HttpSecurity http) throws Exception {
-		// @formatter:off
-		http
-			.antMatcher("/messages/**")
-			.authorizeRequests()
-				.antMatchers("/messages/**").access("#oauth2.hasScope('message.read')");
-		// @formatter:on
-	}
+  @Override
+  public void configure(HttpSecurity http) throws Exception {
+    // @formatter:off
+    http
+        .antMatcher("/messages/**")
+        .authorizeRequests()
+        .antMatchers("/messages/**").access("#oauth2.hasScope('message.read')");
+    // @formatter:on
+  }
 }
